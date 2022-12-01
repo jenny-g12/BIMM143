@@ -1,0 +1,139 @@
+---
+title: "Class 9 - Structural Bioinformatics"
+author: "Jenny"
+format: pdf
+---
+
+## THe RCSB Protein Data Bank  (PDB )
+
+Protein structures by X-ray crystalography dominante this database. We are going to use Molstar
+Skipping questions 1-3 since the website was too slow for us
+
+* Computer doesn't allow me to open WebGL since my browser seems to be outdated so I can't do this step...
+Without having access to this website I'm not able to answer questions 4-7
+
+## 3. Introduction to Bio3D in R
+
+Bio3D is an R package for structural bioinformaics. To use it we need to call it up with the 'library()' function ( just like any package)
+
+```{r}
+library("bio3d")
+```
+
+```{r}
+pdb <- read.pdb("1hsg")
+pdb
+```
+
+> Q7. How many amino acid residues are there in this pdb object ? 
+          198
+          
+> Q8. Name one of the two non-protein residues ?
+          mk1
+
+>Q9. How many protein chains are in this structure ?
+          2
+
+```{r}
+attributes(pdb)
+```
+
+```{r}
+head(pdb$atom)
+```
+
+## Comparative structure analysis of Adenylate Kinase
+    Adenylate kinase structure (PDB code: 1AKE)
+
+Make sure to install the packages first
+
+>Q10. Which of the packages above is found only on BioConductor and not CRAN ?
+          msa
+
+>Q11. Which of the above packages is not found on BioConductor or CRAN ?
+          none
+          
+>Q12. True or False? Functions from the devtools package can be used to install packages from GitHub and BitBucket ?
+          TRUE
+
+First we get it's primary sequence :
+```{r}
+library(bio3d)
+aa <- get.seq("1ake_A")
+```
+```{r}
+aa
+```
+
+>Q13.How many amino acids are in this sequence, i.e. how long is this sequence ?
+      214
+      
+```{r}
+# Blast or hammer search
+b <- blast.pdb(aa)
+```
+
+```{r}
+hits <- NULL
+hits$pdb.id <- c('1AKE_A','6S36_A','6RZE_A','3HPR_A','1E4V_A','5EJE_A','1E4Y_A','3X2S_A','6HAP_A','6HAM_A','4K46_A','3GMT_A','4PZL_A')
+```
+
+```{r}
+# List out some 'top hits'
+head(hits$pdb.id)
+```
+
+
+
+```{r}
+# Download releated PDB files
+files <- get.pdb(hits$pdb.id, path="pdbs", split=TRUE, gzip=TRUE)
+```
+
+```{r}
+pdbs <- pdbaln(files, fit = TRUE, exefile = "msa")
+```
+
+```{r}
+ids <- basename.pdb(pdbs$id)
+plot(pdbs, labels=ids)
+```
+
+```{r}
+anno <- pdb.annotate(ids)
+unique(anno$source)
+```
+
+## PCA
+
+```{r}
+pc.xray <- pca(pdbs)
+plot(pc.xray)
+```
+
+```{r}
+rd <- rmsd(pdbs)
+hc.rd <- hclust(dist(rd))
+grps.rd <- cutree(hc.rd, k=3)
+
+plot(pc.xray, 1:2, col="grey50", bg=grps.rd, pch=21, cex=1)
+```
+
+```{r}
+library(ggplot2)
+library(ggrepel)
+
+df <- data.frame(PC1=pc.xray$z[,1], 
+                 PC2=pc.xray$z[,2], 
+                 col=as.factor(grps.rd),
+                 ids=ids)
+
+p <- ggplot(df) + 
+  aes(PC1, PC2, col=col, label=ids) +
+  geom_point(size=2) +
+  geom_text_repel(max.overlaps = 20) +
+  theme(legend.position = "none")
+p
+```
+
+
