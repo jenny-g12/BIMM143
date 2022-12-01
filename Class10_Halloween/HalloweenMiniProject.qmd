@@ -1,7 +1,7 @@
 ---
 title: "Halloween Candy Project"
 author: "Jenny"
-format: pdf
+format: gfm
 ---
 
 ## Import candy data
