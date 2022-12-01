@@ -1,7 +1,7 @@
 ---
 title: "Class 13: RNA Mini Sequence"
 author: "Jenny"
-format: pdf
+format: gfm
 ---
 
 The authors report on differential analysis of lung fibroblasts in response to loss of the developmental transcription factor
